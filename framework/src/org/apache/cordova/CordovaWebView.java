@@ -264,17 +264,24 @@ public class CordovaWebView extends WebView {
         // Fix for CB-1405
         // Google issue 4641
         this.updateUserAgentString();
-        
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
-        if (this.receiver == null) {
-            this.receiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    updateUserAgentString();
-                }
-            };
-            this.cordova.getActivity().registerReceiver(this.receiver, intentFilter);
+        boolean listenForLocaleUpdates = true;
+        Intent intent = this.cordova.getActivity().getIntent();
+        if (intent.hasExtra("listenForLocaleUpdates")) {
+            listenForLocaleUpdates = intent.getStringExtra("listenForLocaleUpdates").equals("true");
+        }
+
+        if (listenForLocaleUpdates) {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
+            if (this.receiver == null) {
+                this.receiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        updateUserAgentString();
+                    }
+                };
+                this.cordova.getActivity().registerReceiver(this.receiver, intentFilter);
+            }
         }
         // end CB-1405
 
